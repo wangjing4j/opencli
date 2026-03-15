@@ -40,7 +40,27 @@ OpenCLI 通过 Chrome 浏览器 + [Playwright MCP Bridge](https://github.com/nic
 - **Chrome** 浏览器正在运行，且**已登录目标网站**（如 bilibili.com、zhihu.com、xiaohongshu.com）
 - 安装 **[Playwright MCP Bridge](https://chromewebstore.google.com/detail/playwright-mcp-bridge/mmlmfjhmonkocbjadbfplnigmagldckm)** 扩展
 
-这是默认连接方式——安装扩展后无需额外配置。
+你必须将 `PLAYWRIGHT_MCP_EXTENSION_TOKEN`（在插件设置页获取）配置到环境变量或者你的 MCP 配置文件中：
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--extension"],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "<你的-token>"
+      }
+    }
+  }
+}
+```
+
+如果你是在终端里直接运行 `opencli`，也可以直接将其 export 为环境变量：
+
+```bash
+export PLAYWRIGHT_MCP_EXTENSION_TOKEN="<你的-token>"
+```
 
 #### 可选：Chrome 144+ CDP 自动发现
 

@@ -40,7 +40,27 @@ A CLI tool that turns **any website** into a command-line interface. **47 comman
 - **Chrome** running **and logged into the target site** (e.g. bilibili.com, zhihu.com, xiaohongshu.com).
 - **[Playwright MCP Bridge](https://chromewebstore.google.com/detail/playwright-mcp-bridge/mmlmfjhmonkocbjadbfplnigmagldckm)** extension installed in Chrome.
 
-This is the default connection mode — no extra configuration needed beyond installing the extension.
+You need to configure `PLAYWRIGHT_MCP_EXTENSION_TOKEN` (obtained from the extension settings page) in your environment or MCP config:
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--extension"],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "<your-token-here>"
+      }
+    }
+  }
+}
+```
+
+Or just export it if you are running `opencli` directly in terminal:
+
+```bash
+export PLAYWRIGHT_MCP_EXTENSION_TOKEN="<your-token-here>"
+```
 
 #### Alternative: Chrome 144+ CDP Auto-Discovery
 
