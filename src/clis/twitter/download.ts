@@ -2,7 +2,7 @@
  * Twitter/X download — download images and videos from tweets.
  *
  * Usage:
- *   opencli twitter download --username elonmusk --limit 10 --output ./twitter
+ *   opencli twitter download elonmusk --limit 10 --output ./twitter
  *   opencli twitter download --tweet-url https://x.com/xxx/status/123 --output ./twitter
  */
 
@@ -27,7 +27,7 @@ cli({
   domain: 'x.com',
   strategy: Strategy.COOKIE,
   args: [
-    { name: 'username', help: 'Twitter username (downloads from media tab)' },
+    { name: 'username', positional: true, help: 'Twitter username (downloads from media tab)' },
     { name: 'tweet-url', help: 'Single tweet URL to download' },
     { name: 'limit', type: 'int', default: 10, help: 'Number of tweets to scan' },
     { name: 'output', default: './twitter-downloads', help: 'Output directory' },
@@ -44,7 +44,7 @@ cli({
         index: 0,
         type: '-',
         status: 'failed',
-        size: 'Must provide --username or --tweet-url',
+        size: 'Must provide a username or --tweet-url',
       }];
     }
 
