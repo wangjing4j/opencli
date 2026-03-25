@@ -1,0 +1,44 @@
+# iCRM MD UAT — baseAccount TER list via browser Cookie session.
+# Prerequisites: Browser Bridge extension connected; log in to UAT web in the
+# automation window (or ensure cookies cover gateway *.imstech.com.cn).
+# No JWT flag — session cookies are sent with fetch(credentials: "include").
+site: icrmmd
+name: ter-list
+description: List TER accounts (ipro-biz-core baseAccount/web/ter/list, UAT, cookie session)
+domain: icrmmd-web-uat.imstech.com.cn
+strategy: cookie
+browser: true
+
+args:
+  tenantId:
+    default: 846561c506b063d9b1695cd8bfae2fb7
+    description: Header tenant-id
+  pageNo:
+    type: int
+    default: 1
+    description: Page number
+  pageSize:
+    type: int
+    default: 10
+    description: Page size
+
+pipeline:
+  - fetch:
+      url: https://icrmmd-gateway-uat.imstech.com.cn/ipro-biz-core/baseAccount/web/ter/list
+      method: GET
+      params:
+        column: createTime
+        order: desc
+        field: id,,,id,accCode,accName,accGender,accType,toAccName,toAccCode,accDepart,accSpecialty,accJobTitle,accTitle,customField6,customField7,customField8,customField9,customField11,customField12,customField40,customField5
+        pageNo: ${{ args.pageNo }}
+        pageSize: ${{ args.pageSize }}
+      headers:
+        accept: application/json, text/plain, */*
+        accept-language: en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7
+        cache-control: no-cache
+        pragma: no-cache
+        origin: https://icrmmd-web-uat.imstech.com.cn
+        referer: https://icrmmd-web-uat.imstech.com.cn/
+        tenant-id: ${{ args.tenantId }}
+
+# Optional: add `- select: ...` and `columns:` once you know the JSON shape.
