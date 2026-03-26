@@ -1,15 +1,21 @@
-# iCRM MD UAT — baseAccount TER list via browser Cookie session.
-# Prerequisites: Browser Bridge extension connected; log in to UAT web in the
-# automation window (or ensure cookies cover gateway *.imstech.com.cn).
-# No JWT flag — session cookies are sent with fetch(credentials: "include").
+# iCRM MD UAT — baseAccount TER list (browser context + x-access-token).
+# Prerequisites: Browser Bridge connected; automation window logged into UAT web so
+# localStorage has pro__Access-Token = {"value":"<JWT>","expire":<ms>}. Override key via --tokenStorageKey;
+# override JWT via --accessToken (raw token, not the JSON wrapper).
+# fetch() still uses credentials: "include" for any shared cookies.
 site: icrmmd
 name: ter-list
-description: List TER accounts (ipro-biz-core baseAccount/web/ter/list, UAT, cookie session)
+description: List TER accounts (ipro-biz-core baseAccount/web/ter/list, UAT; x-access-token from localStorage or --accessToken)
 domain: icrmmd-web-uat.imstech.com.cn
 strategy: cookie
 browser: true
 
 args:
+  accessToken:
+    description: Optional x-access-token; when set, skips localStorage (use if key differs or for quick tests)
+  tokenStorageKey:
+    default: pro__Access-Token
+    description: localStorage key; value is JSON with .value (JWT) and optional .expire (epoch ms)
   tenantId:
     default: 846561c506b063d9b1695cd8bfae2fb7
     description: Header tenant-id
@@ -23,6 +29,28 @@ args:
     description: Page size
 
 pipeline:
+  - evaluate: |
+      (async () => {
+        const key = "${{ args.tokenStorageKey }}";
+        let override = ${{ args.accessToken | json }};
+        if (override !== null && override !== undefined && String(override).length > 0) {
+          return { accessToken: String(override) };
+        }
+        const raw = localStorage.getItem(key);
+        if (!raw) throw new Error('[icrmmd ter-list] localStorage.' + key + ' is empty — log in on UAT in this automation window, or pass --accessToken.');
+        let parsed = null;
+        let jwt = '';
+        try {
+          parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.value === 'string') jwt = parsed.value;
+        } catch (e) { /* treat as plain JWT string */ }
+        if (!jwt) jwt = String(raw).trim();
+        if (!jwt) throw new Error('[icrmmd ter-list] No JWT in localStorage.' + key + ' (expected JSON with .value).');
+        if (parsed && typeof parsed.expire === 'number' && parsed.expire < Date.now()) {
+          throw new Error('[icrmmd ter-list] localStorage token expired (expire < now). Log in again.');
+        }
+        return { accessToken: jwt };
+      })()
   - fetch:
       url: https://icrmmd-gateway-uat.imstech.com.cn/ipro-biz-core/baseAccount/web/ter/list
       method: GET
@@ -40,5 +68,6 @@ pipeline:
         origin: https://icrmmd-web-uat.imstech.com.cn
         referer: https://icrmmd-web-uat.imstech.com.cn/
         tenant-id: ${{ args.tenantId }}
+        x-access-token: ${{ data.accessToken }}
 
 # Optional: add `- select: ...` and `columns:` once you know the JSON shape.
