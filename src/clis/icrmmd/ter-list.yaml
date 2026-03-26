@@ -69,5 +69,37 @@ pipeline:
         referer: https://icrmmd-web-uat.imstech.com.cn/
         tenant-id: ${{ args.tenantId }}
         x-access-token: ${{ data.accessToken }}
+  - evaluate: |
+      (async () => {
+        const payload = ${{ data | json }} || {};
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload.result)) return payload.result;
+        if (Array.isArray(payload.data)) return payload.data;
+        if (payload.result && Array.isArray(payload.result.records)) return payload.result.records;
+        if (payload.result && Array.isArray(payload.result.list)) return payload.result.list;
+        if (payload.data && Array.isArray(payload.data.records)) return payload.data.records;
+        if (payload.data && Array.isArray(payload.data.list)) return payload.data.list;
+        return [];
+      })()
+  - map:
+      id: ${{ item.id }}
+      accCode: ${{ item.accCode }}
+      accName: ${{ item.accName }}
+      accGender: ${{ item.accGender }}
+      accType: ${{ item.accType }}
+      toAccName: ${{ item.toAccName }}
+      toAccCode: ${{ item.toAccCode }}
+      accDepart: ${{ item.accDepart }}
+      accSpecialty: ${{ item.accSpecialty }}
+      accJobTitle: ${{ item.accJobTitle }}
+      accTitle: ${{ item.accTitle }}
+      customField6: ${{ item.customField6 }}
+      customField7: ${{ item.customField7 }}
+      customField8: ${{ item.customField8 }}
+      customField9: ${{ item.customField9 }}
+      customField11: ${{ item.customField11 }}
+      customField12: ${{ item.customField12 }}
+      customField40: ${{ item.customField40 }}
+      customField5: ${{ item.customField5 }}
 
-# Optional: add `- select: ...` and `columns:` once you know the JSON shape.
+columns: [id, accCode, accName, accGender, accType, toAccName, toAccCode, accDepart, accSpecialty, accJobTitle, accTitle, customField6, customField7, customField8, customField9, customField11, customField12, customField40, customField5]
